@@ -16,31 +16,32 @@ import sys
 
 
 def take_png(path, files):
-    # sys.path.append(
-    #     os.path.abspath(os.path.join(os.getcwd(), path)))
-    # print(path)
     img = cv2.imread(os.path.join(path, files))
-    # img = cv2.imdecode(np.fromfile(files, dtype=np.uint8), -1)
 
+    # 将图片转为灰度图
+    img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     b, g, r = cv2.split(img)
     image = cv2.merge([r, g, b])
-
+    # cv2.imshow("img_gray", img_gray)
+    # cv2.waitKey()
+    # image_zip = np.dstack((tuple(r.reshape(1, -1)), tuple(g.reshape(1, -1))))
+    # image_zip = np.dstack((image_zip, tuple(b.reshape(1, -1))))
+    # image_zip = image_zip.reshape(300, 300, 3)
+    #
+    # print(":::::")
+    # print(image_zip.shape)
+    # print(image_zip[151, 153, :])
+    # print(image[151, 153, :])
+    # print(":::::")
     df_r_o = pd.DataFrame(r)
     df_g_o = pd.DataFrame(g)
     df_b_o = pd.DataFrame(b)
-    return df_r_o, df_g_o, df_b_o, image
+    img_gray = pd.DataFrame(img_gray)
+
+    return df_r_o, df_g_o, df_b_o, image, img_gray
 
 
 def distance(df):
-    # df['x'] = abs(df.columns ** 2 - 155)
-    # df['y'] = abs(df.index ** 2 - 155)
-    # df['df_res'] = math.sqrt(df['x'] + df['y'])
-    # df_res=df[math.sqrt(df.index**2+df.columns**2)<=93]
-
-    # df = df.values
-    # df_diagonal=df.diagonal()
-    # print(df_diagonal)
-
     diagonal = np.diag_indices(300)
     x1 = diagonal[0]
     y1 = np.array(diagonal[1]).reshape(300, 1)
@@ -49,105 +50,141 @@ def distance(df):
     df = df[d <= 93]
     return df
 
-    # diagonal = np.diag_indices(300)
-    # df_diagonal=df[diagonal]
-    # x1 = df_diagonal[0]
-    # y1 = np.array(df_diagonal[1]).reshape(4, 1)
-    # d = np.sqrt((x1 - 0) ** 2 + (y1 - 0) ** 2)
+
+def panduan_all(df_r, df_g, df_b, df_gray):
+    # 返回灰度值，及其比例
+    df_gray_ya = df_gray.values.reshape(-1, 1)
+    df_gray_ya = pd.DataFrame(df_gray_ya)
+    res_gray = df_gray_ya.iloc[:, 0].value_counts()
+
+    res_list = res_gray.iloc[:3]
+    if res_list.shape[0] == 1:
+        res_1_per = round_up(res_list.iloc[0] / res_list.sum() * 100, 2)
+        res_2_per = 0
+        res_3_per = 0
+    elif res_list.shape[0] == 2:
+        res_1_per = round_up(res_list.iloc[0] / res_list.sum() * 100, 2)
+        res_2_per = round_up(res_list.iloc[1] / res_list.sum() * 100, 2)
+        res_3_per = 0
+    else:
+        res_1_per = round_up(res_list.iloc[0] / res_list.sum() * 100, 2)
+        res_2_per = round_up(res_list.iloc[1] / res_list.sum() * 100, 2)
+        res_3_per = round_up(res_list.iloc[2] / res_list.sum() * 100, 2)
+
+    res_per_list = [res_1_per, res_2_per, res_3_per]
+
+    # 返回最终颜色r，g，b对应位置
+    df_r_ya = df_r.values.reshape(-1, 1)
+    df_g_ya = df_r.values.reshape(-1, 1)
+    df_b_ya = df_r.values.reshape(-1, 1)
+
+    df_r_ya = pd.DataFrame(df_r_ya)
+    df_g_ya = pd.DataFrame(df_g_ya)
+    df_b_ya = pd.DataFrame(df_b_ya)
+    res_r = df_r_ya.iloc[:, 0].value_counts()
+    res_g = df_g_ya.iloc[:, 0].value_counts()
+    res_b = df_b_ya.iloc[:, 0].value_counts()
+    res_r_list = list(res_r.iloc[:3].index)
+
+    print("llll")
+    print(res_r_list[0])
+    col_r_list=[]
+    for i in range(0, len(res_r_list)):
+        r_x = np.mean(list(df_r[df_r == res_r_list[i]].columns))
+        r_y = np.mean(list(df_r[df_r == res_r_list[i]].index))
+        col_r_list.append([r_x,r_y])
+
+
+
+    print(r_x)
+    print("llll")
+
+    return res_per_list
 
 
 def panduan(df):
     panduan_df = df.values.reshape(-1, 1)
     panduan_df = pd.DataFrame(panduan_df)
     res = panduan_df.iloc[:, 0].value_counts()
-    print("res")
-    # col_name=panduan_df.columns
-    # res=panduan_df.groupby(col_name[100]).mean()
     # 返回最终颜色r，g，b值，及其比例
     res_list = res.iloc[:3]
-    res_list_value = res_list.index / 255
-    print(res_list)
-    # 返回最终颜色r，g，b百分比
-    # df_totall = 3.1415926 * 93 ** 2
+    # print("hhhhhhhhhhhh")
+    # print(res)
     if res_list.shape[0] == 1:
-        res_1_per = round_up(res_list.iloc[0] / res.sum() * 100, 2)
-        res_2_per = 0
-        res_3_per = 0
-    elif res_list.shape[0] == 2:
-        res_1_per = round_up(res_list.iloc[0] / res.sum() * 100, 2)
-        res_2_per = round_up(res_list.iloc[1] / res.sum() * 100, 2)
-        res_3_per = 0
-    else:
-        res_1_per = round_up(res_list.iloc[0] / res.sum() * 100, 2)
-        res_2_per = round_up(res_list.iloc[1] / res.sum() * 100, 2)
-        res_3_per = round_up(res_list.iloc[2] / res.sum() * 100, 2)
+        res_list = pd.DataFrame([res_list.index, res_list.index, res_list.index])
 
-    res_per_list = [res_1_per, res_2_per, res_3_per]
-    print(res_per_list)
-    return res_list_value, res_per_list
+    res_list_value = res_list.index / 255
+
+    return res_list_value
 
 
 if __name__ == "__main__":
 
-    path = r'D:\\NEW\\M'
-    new_path = r'D:\\result_new\\M'
+    path = r'D:\\NEW\\1'
+    new_path = r'D:\\result_new\\F'
     count = os.listdir(path)
     for root, dirs, files in os.walk(path):
         if len(dirs) == 0:
             for i in range(len(files)):
-                print("i=", i)
+                # print("i=", i)
                 if files[i].find('.png') != -1:
                     print(files[i])
 
-                    df_r_o, df_g_o, df_b_o, image = take_png(path, files[i])
+                    df_r_o, df_g_o, df_b_o, image, img_gray = take_png(path, files[i])
                     df_r_o1 = distance(df_r_o)
                     df_g_o1 = distance(df_g_o)
                     df_b_o1 = distance(df_b_o)
-                    res_r_list, res_r_per_list = panduan(df_r_o1)
-                    res_g_list, res_g_per_list = panduan(df_g_o1)
-                    res_b_list, res_b_per_list = panduan(df_b_o1)
+                    img_gray = distance(img_gray)
+                    res_per_list = panduan_all(df_r_o1, df_g_o1, df_b_o1, img_gray)
+
+                    res_r_list = panduan(df_r_o1)
+                    res_g_list = panduan(df_g_o1)
+                    res_b_list = panduan(df_b_o1)
+                    print(res_r_list)
+                    print(res_g_list)
+                    print(res_b_list)
+
                     #
                     # 生成图例
-                    res_green_patch_per = np.mean([res_r_per_list[0], res_g_per_list[0], res_b_per_list[0]])
-                    res_red_patch_per = np.mean([res_r_per_list[1], res_g_per_list[1], res_b_per_list[1]])
-                    res_yellow_patch_per = np.mean([res_r_per_list[2], res_g_per_list[2], res_b_per_list[2]])
-                    if res_yellow_patch_per < 1 and res_red_patch_per >= 1:
-                        res_red_patch_per = round_up(100 - res_green_patch_per, 2)
+
+                    if res_per_list[2] < 0.5 and res_per_list[1] >= 0.5:
+
+                        res_red_patch_per = round_up(100 - res_per_list[0], 2)
                         green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
-                                                     label='The data1 %s' % res_green_patch_per)
+                                                     label='The data1 %s' % res_per_list[0])
                         red_patch = mpatches.Patch(color=[res_r_list[1], res_g_list[1], res_b_list[1]],
                                                    label='The data2 %s' % res_red_patch_per)
                         plt.legend(handles=[green_patch, red_patch])
-                    elif res_yellow_patch_per < 1 and res_red_patch_per < 1:
-                        res_green_patch_per=100
+                    elif res_per_list[2] < 0.5 and res_per_list[1] < 0.5:
+                        res_green_patch_per = 100
                         green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
                                                      label='The data1 %s' % res_green_patch_per)
                         plt.legend(handles=[green_patch])
                     else:
-                        res_red_patch_per = round_up(100 - res_green_patch_per - res_yellow_patch_per, 2)
+                        res_red_patch_per = round_up(100 - res_per_list[0] - res_per_list[2], 2)
 
                         green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
-                                                     label='The data1 %s' % res_green_patch_per)
+                                                     label='The data1 %s' % res_per_list[0])
                         red_patch = mpatches.Patch(color=[res_r_list[1], res_g_list[1], res_b_list[1]],
                                                    label='The data2 %s' % res_red_patch_per)
                         yellow_patch = mpatches.Patch(color=[res_r_list[2], res_g_list[2], res_b_list[2]],
-                                                      label='The data3 %s' % res_yellow_patch_per)
+                                                      label='The data3 %s' % res_per_list[2])
 
                         plt.legend(handles=[green_patch, red_patch, yellow_patch])
 
                     plt.imshow(image)
                     plt.axis('off')
-                    # plt.show()
+                    plt.show()
                     plt.savefig(os.path.join(new_path, files[i]))
                     # name = "AB.xlsx"
                     # writer = pd.ExcelWriter(name)  # 写入Excel文件
-                    # df_r_o.to_excel(writer, 'df_r_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # img_gray.to_excel(writer, 'img_gray', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
                     # df_r_o1.to_excel(writer, 'df_r_o1', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
-                    #
-                    # # df_g_o.to_excel(writer, 'df_g_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
-                    # # df_b_o.to_excel(writer, 'df_b_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
-                    # # res.to_excel(writer, 'res', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
-                    # #
-                    # # # df_r_cont.to_excel(writer, 'page_2', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # df_r_o.to_excel(writer, 'df_r_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # df_g_o.to_excel(writer, 'df_g_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # df_b_o.to_excel(writer, 'df_b_o', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # # # res.to_excel(writer, 'res', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
+                    # # #
+                    # # # # df_r_cont.to_excel(writer, 'page_2', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
                     #
                     # writer.save()
