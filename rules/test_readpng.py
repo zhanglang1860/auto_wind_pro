@@ -36,9 +36,10 @@ def take_png(path, files):
     df_r_o = pd.DataFrame(r)
     df_g_o = pd.DataFrame(g)
     df_b_o = pd.DataFrame(b)
+
     img_gray = pd.DataFrame(img_gray)
 
-    return df_r_o, df_g_o, df_b_o, image, img_gray
+    return image, img_gray
 
 
 def distance(df):
@@ -51,13 +52,14 @@ def distance(df):
     return df
 
 
-def panduan_all(df_r, df_g, df_b, df_gray):
+def panduan_all(df_gray):
     # 返回灰度值，及其比例
     df_gray_ya = df_gray.values.reshape(-1, 1)
     df_gray_ya = pd.DataFrame(df_gray_ya)
     res_gray = df_gray_ya.iloc[:, 0].value_counts()
-
     res_list = res_gray.iloc[:3]
+    res_index_list = list(res_list.index)
+    print(res_index_list)
     if res_list.shape[0] == 1:
         res_1_per = round_up(res_list.iloc[0] / res_list.sum() * 100, 2)
         res_2_per = 0
@@ -74,32 +76,39 @@ def panduan_all(df_r, df_g, df_b, df_gray):
     res_per_list = [res_1_per, res_2_per, res_3_per]
 
     # 返回最终颜色r，g，b对应位置
-    df_r_ya = df_r.values.reshape(-1, 1)
-    df_g_ya = df_r.values.reshape(-1, 1)
-    df_b_ya = df_r.values.reshape(-1, 1)
+    # df_r_ya = df_r.values.reshape(-1, 1)
+    # df_g_ya = df_g.values.reshape(-1, 1)
+    # df_b_ya = df_b.values.reshape(-1, 1)
+    #
+    # df_r_ya = pd.DataFrame(df_r_ya)
+    # df_g_ya = pd.DataFrame(df_g_ya)
+    # df_b_ya = pd.DataFrame(df_b_ya)
+    # res_r = df_r_ya.iloc[:, 0].value_counts()
+    # res_g = df_g_ya.iloc[:, 0].value_counts()
+    # res_b = df_b_ya.iloc[:, 0].value_counts()
+    # res_r_list = list(res_r.iloc[:3].index)
+    # res_g_list = list(res_g.iloc[:3].index)
+    # res_b_list = list(res_b.iloc[:3].index)
 
-    df_r_ya = pd.DataFrame(df_r_ya)
-    df_g_ya = pd.DataFrame(df_g_ya)
-    df_b_ya = pd.DataFrame(df_b_ya)
-    res_r = df_r_ya.iloc[:, 0].value_counts()
-    res_g = df_g_ya.iloc[:, 0].value_counts()
-    res_b = df_b_ya.iloc[:, 0].value_counts()
-    res_r_list = list(res_r.iloc[:3].index)
+    # print(res_r_list)
+    # col_r_list, col_g_list, col_b_list = [], [], []
+    col_list = []
+    for i in range(0, len(res_index_list)):
+        r_x = df_gray.index[np.where(df_gray == res_index_list[i])[0]][10]
+        r_y = df_gray.columns[np.where(df_gray == res_index_list[i])[1]][10]
+        col_list.append([r_x, r_y])
 
-    print("llll")
-    print(res_r_list[0])
-    col_r_list=[]
-    for i in range(0, len(res_r_list)):
-        r_x = np.mean(list(df_r[df_r == res_r_list[i]].columns))
-        r_y = np.mean(list(df_r[df_r == res_r_list[i]].index))
-        col_r_list.append([r_x,r_y])
+    # for i in range(0, len(res_g_list)):
+    #     g_x = df_g.index[np.where(df_g == res_g_list[i])[0]][10]
+    #     g_y = df_g.columns[np.where(df_g == res_g_list[i])[1]][10]
+    #     col_g_list.append([g_x, g_y])
+    #
+    # for i in range(0, len(res_b_list)):
+    #     b_x = df_b.index[np.where(df_b == res_b_list[i])[0]][10]
+    #     b_y = df_b.columns[np.where(df_b == res_b_list[i])[1]][10]
+    #     col_b_list.append([b_x, b_y])
 
-
-
-    print(r_x)
-    print("llll")
-
-    return res_per_list
+    return res_per_list, col_list
 
 
 def panduan(df):
@@ -130,45 +139,44 @@ if __name__ == "__main__":
                 if files[i].find('.png') != -1:
                     print(files[i])
 
-                    df_r_o, df_g_o, df_b_o, image, img_gray = take_png(path, files[i])
-                    df_r_o1 = distance(df_r_o)
-                    df_g_o1 = distance(df_g_o)
-                    df_b_o1 = distance(df_b_o)
+                    image, img_gray = take_png(path, files[i])
+                    # df_r_o1 = distance(df_r_o)
+                    # df_g_o1 = distance(df_g_o)
+                    # df_b_o1 = distance(df_b_o)
                     img_gray = distance(img_gray)
-                    res_per_list = panduan_all(df_r_o1, df_g_o1, df_b_o1, img_gray)
-
-                    res_r_list = panduan(df_r_o1)
-                    res_g_list = panduan(df_g_o1)
-                    res_b_list = panduan(df_b_o1)
-                    print(res_r_list)
-                    print(res_g_list)
-                    print(res_b_list)
+                    res_per_list, col_list = panduan_all(img_gray)
+                    #
+                    # res_r_list = panduan(df_r_o1)
+                    # res_g_list = panduan(df_g_o1)
+                    # res_b_list = panduan(df_b_o1)
+                    # print(res_r_list)
+                    # print(res_g_list)
+                    # print(res_b_list)
 
                     #
                     # 生成图例
-
+                    # 有两种颜色
                     if res_per_list[2] < 0.5 and res_per_list[1] >= 0.5:
-
                         res_red_patch_per = round_up(100 - res_per_list[0], 2)
-                        green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
-                                                     label='The data1 %s' % res_per_list[0])
-                        red_patch = mpatches.Patch(color=[res_r_list[1], res_g_list[1], res_b_list[1]],
-                                                   label='The data2 %s' % res_red_patch_per)
+                        col1 = image[col_list[0][0], col_list[0][1], :] / 255
+                        col2 = image[col_list[1][0], col_list[1][1], :] / 255
+                        col3 = image[col_list[2][0], col_list[2][1], :] / 255
+
+                        green_patch = mpatches.Patch(color=col1, label='The data1 %s' % res_per_list[0])
+                        red_patch = mpatches.Patch(color=col2, label='The data2 %s' % res_red_patch_per)
                         plt.legend(handles=[green_patch, red_patch])
+                    # 有一种颜色
                     elif res_per_list[2] < 0.5 and res_per_list[1] < 0.5:
                         res_green_patch_per = 100
-                        green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
-                                                     label='The data1 %s' % res_green_patch_per)
+                        green_patch = mpatches.Patch(color=col1, label='The data1 %s' % res_green_patch_per)
                         plt.legend(handles=[green_patch])
+                    # 有三种颜色
                     else:
                         res_red_patch_per = round_up(100 - res_per_list[0] - res_per_list[2], 2)
 
-                        green_patch = mpatches.Patch(color=[res_r_list[0], res_g_list[0], res_b_list[0]],
-                                                     label='The data1 %s' % res_per_list[0])
-                        red_patch = mpatches.Patch(color=[res_r_list[1], res_g_list[1], res_b_list[1]],
-                                                   label='The data2 %s' % res_red_patch_per)
-                        yellow_patch = mpatches.Patch(color=[res_r_list[2], res_g_list[2], res_b_list[2]],
-                                                      label='The data3 %s' % res_per_list[2])
+                        green_patch = mpatches.Patch(color=col1, label='The data1 %s' % res_per_list[0])
+                        red_patch = mpatches.Patch(color=col2, label='The data2 %s' % res_red_patch_per)
+                        yellow_patch = mpatches.Patch(color=col3, label='The data3 %s' % res_per_list[2])
 
                         plt.legend(handles=[green_patch, red_patch, yellow_patch])
 
