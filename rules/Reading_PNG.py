@@ -63,6 +63,7 @@ def save_file(filename):
     writer = pd.ExcelWriter(name)  # 写入Excel文件
     # ‘page_1’是写入excel的sheet名
     df.to_excel(writer, 'img_res', float_format='%.5f')
+
     writer.save()
 
 
