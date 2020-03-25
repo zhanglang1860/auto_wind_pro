@@ -150,15 +150,19 @@ if __name__ == "__main__":
                     # writer.save()
 
     df = df.pivot(index='文件名', columns='颜色', values='百分比')
-    df = df.fillna(0)
-    df['总计'] = df['红'] + df['绿'] + df['蓝'] + df['黄']
-    df['红'] = round(df['红'] / df['总计'] * 100, 2)
-    df['绿'] = round(df['绿'] / df['总计'] * 100, 2)
-    df['蓝'] = round(df['蓝'] / df['总计'] * 100, 2)
-    df['黄'] = round(df['黄'] / df['总计'] * 100, 2)
-    df['总计'] = df['红'] + df['绿'] + df['蓝'] + df['黄']
-
+    
+    if len(df.columns)<=2:
+        print("颜色不完整")
+    else:
+        df = df.fillna(0)
+        df['总计'] = df['红'] + df['绿'] + df['蓝'] + df['黄']
+        df['红'] = round(df['红'] / df['总计'] * 100, 2)
+        df['绿'] = round(df['绿'] / df['总计'] * 100, 2)
+        df['蓝'] = round(df['蓝'] / df['总计'] * 100, 2)
+        df['黄'] = round(df['黄'] / df['总计'] * 100, 2)
+        df['总计'] = df['红'] + df['绿'] + df['蓝'] + df['黄']
     print(df)
+    
     name = "AB.xlsx"
     writer = pd.ExcelWriter(name)  # 写入Excel文件
     df.to_excel(writer, 'img_res', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
