@@ -5,7 +5,6 @@ def round_dict(dic):
 
     return dic
 
-
 def round_up(value, dec_digits=2):
     result = str(value).strip()
     if result != '':
