@@ -3,8 +3,9 @@
 # @Author: Yicheng Zhang
 # @File : test.py
 
-from RoundUp import *
-import cv2, os
+from RoundUp import round_up
+import cv2
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.patches as mpatches
@@ -42,7 +43,8 @@ def calculate(df_gray):
     res_list = res_gray.iloc[:4]
     # print(res_list)
     res_list = pd.DataFrame(res_list)
-    res_list['per'] = round(res_list.iloc[:, 0] / res_list.iloc[:, 0].sum() * 100, 2)
+    res_list['per'] = round(res_list.iloc[:, 0] /
+                            res_list.iloc[:, 0].sum() * 100, 2)
     res_index_list = list(res_list.index)
     res_per_list = list(res_list['per'])
     # 返回最终颜色r，g，b对应位置
@@ -53,6 +55,15 @@ def calculate(df_gray):
         col_list.append([r_x, r_y])
 
     return res_per_list, col_list
+
+
+def save_file(filename):
+
+    name = filename
+    writer = pd.ExcelWriter(name)  # 写入Excel文件
+    # ‘page_1’是写入excel的sheet名
+    df.to_excel(writer, 'img_res', float_format='%.5f')
+    writer.save()
 
 
 if __name__ == "__main__":
@@ -84,11 +95,12 @@ if __name__ == "__main__":
                     green = str(0) + "," + str(128) + "," + str(0)
                     col_dict = {red: '红', yellow: '黄', bule: '蓝', green: '绿'}
                     # print(col_dict)
-                    image_df = pd.DataFrame([col1, col2, col3, col4], columns=["colname1", "colname2", "colname3"])
+                    image_df = pd.DataFrame([col1, col2, col3, col4], columns=[
+                                            "colname1", "colname2", "colname3"])
                     image_df['col'] = image_df["colname1"].map(str) + "," + image_df["colname2"].map(str) + "," + \
-                                      image_df["colname3"].map(str)
-                    image_df['颜色'] = image_df.col.map(col_dict);
-                    image_df['百分比'] = res_per_list;
+                        image_df["colname3"].map(str)
+                    image_df['颜色'] = image_df.col.map(col_dict)
+                    image_df['百分比'] = res_per_list
                     image_df['文件名'] = files[i]
                     image_df = image_df[image_df['颜色'].notna()]
                     image_df = image_df[['文件名', '颜色', '百分比']]
@@ -150,8 +162,8 @@ if __name__ == "__main__":
                     # writer.save()
 
     df = df.pivot(index='文件名', columns='颜色', values='百分比')
-    
-    if len(df.columns)<=2:
+
+    if len(df.columns) <= 2:
         print("颜色不完整")
     else:
         df = df.fillna(0)
@@ -162,8 +174,4 @@ if __name__ == "__main__":
         df['黄'] = round(df['黄'] / df['总计'] * 100, 2)
         df['总计'] = df['红'] + df['绿'] + df['蓝'] + df['黄']
     print(df)
-    
-    name = "AB.xlsx"
-    writer = pd.ExcelWriter(name)  # 写入Excel文件
-    df.to_excel(writer, 'img_res', float_format='%.5f')  # ‘page_1’是写入excel的sheet名
-    writer.save()
+    save_file("AB.xlsx")

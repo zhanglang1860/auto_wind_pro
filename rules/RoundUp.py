@@ -23,8 +23,7 @@ def round_up(value, dec_digits=2):
                 zero_count = dec_digits - zero_count
         else:
             result += '.'
-        for i in range(zero_count):
-            result += '0'
+
     return float(result)
 
 def round_up3(value, dec_digits=3):
