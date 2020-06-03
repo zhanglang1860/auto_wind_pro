@@ -39,9 +39,13 @@ def calculate(df_gray):
     res_list = pd.Series(np.arange(2))
     df_gray_ya = df_gray.values.reshape(-1, 1)
     df_gray_ya = pd.DataFrame(df_gray_ya)
-    res_gray = df_gray_ya.iloc[:, 0].value_counts()
-    res_list = res_gray.iloc[:4]
-    # print(res_list)
+
+    res_gray = df_gray_ya[(df_gray_ya == 29) | (df_gray_ya == 75)].value_counts()
+    res_list = res_gray.iloc[:2]
+
+    # res_gray = df_gray_ya.iloc[:, 0].value_counts()
+    # res_list = res_gray.iloc[:4]
+    # # print(res_list)
     res_list = pd.DataFrame(res_list)
     res_list['per'] = round(res_list.iloc[:, 0] /
                             res_list.iloc[:, 0].sum() * 100, 2)
@@ -58,7 +62,6 @@ def calculate(df_gray):
 
 
 def save_file(filename):
-
     name = filename
     writer = pd.ExcelWriter(name)  # 写入Excel文件
     # ‘page_1’是写入excel的sheet名
@@ -97,15 +100,16 @@ if __name__ == "__main__":
                     col_dict = {red: '红', yellow: '黄', bule: '蓝', green: '绿'}
                     # print(col_dict)
                     image_df = pd.DataFrame([col1, col2, col3, col4], columns=[
-                                            "colname1", "colname2", "colname3"])
+                        "colname1", "colname2", "colname3"])
                     image_df['col'] = image_df["colname1"].map(str) + "," + image_df["colname2"].map(str) + "," + \
-                        image_df["colname3"].map(str)
+                                      image_df["colname3"].map(str)
                     image_df['颜色'] = image_df.col.map(col_dict)
                     image_df['百分比'] = res_per_list
                     image_df['文件名'] = files[i]
-                    image_df = image_df[image_df['颜色'].notna()]
-                    image_df = image_df[['文件名', '颜色', '百分比']]
-
+                    # image_df = image_df[image_df['颜色'].notna()]
+                    image_df = image_df.dropna()
+                    # image_df = image_df[['文件名', '颜色', '百分比']]
+                    print(image_df)
                     df = pd.concat([df, image_df], axis=0)
 
                     # # 有一种颜色
